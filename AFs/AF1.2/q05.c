@@ -91,7 +91,6 @@ int main() {
     printf("\nAlternativa d:\n");
     print_matrizes(dataA, dataB, tam);
 
-
     free(dataA);
     free(dataB);
 

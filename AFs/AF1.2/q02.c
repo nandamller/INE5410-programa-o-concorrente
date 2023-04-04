@@ -38,7 +38,7 @@ int f(int x) {
 
 int main(void) {
     printf("Função a\n");
-    printf("2000: %d\n", a(2000));
+    printf("2001: %d\n", a(2001));
     printf("2020: %d\n", a(2020));
     printf("2200: %d\n", a(2200));
 
@@ -63,7 +63,7 @@ int main(void) {
     printf("2200: %d\n", e(2200));
 
     printf("Função f\n");
-    printf("2000: %d\n", f(2000));
+    printf("2001: %d\n", f(2001));
     printf("2020: %d\n", f(2020));
     printf("2200: %d\n", f(2200));
 
