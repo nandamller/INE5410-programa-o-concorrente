@@ -29,37 +29,50 @@
 // - pais devem esperar pelos seu descendentes diretos antes de terminar
 
 void cria_neto() {
-    pid_t pid_neto = fork();
+    for (int i = 0; i < 3; i++) {
+        pid_t pid = fork();
 
-    if (pid_neto == 0) {
-        printf("Processo %d, filho de %d\n", getpid(), getppid());
-        sleep(5);
-        printf("Processo %d finalizado\n", getpid());
+        if (pid == 0) {
+            printf("Processo %d, filho de %d\n", getpid(), getppid());
+            fflush(stdout);
+            sleep(5);
+            printf("Processo %d finalizado\n", getpid());
+            fflush(stdout);
+            exit(0);
+            break;
+        } else if(pid < 0) {
+            printf("Erro ao criar neto!");
+        }
     }
 }
 
 void cria_filho(){
-    pid_t pid = fork();
+    for (int i = 0; i < 2; i++) {
+        pid_t pid = fork();
 
-    if (pid == 0) {
-        printf("Processo %d, filho de %d\n", getpid(), getppid());
-        fflush(stdout);
-        printf("Processo %d finalizado\n", getpid());
-        fflush(stdout);
-        exit(0);
-    } else if(pid > 0) {
-        while(wait(NULL) >= 0);
-    } else {
-        printf("Erro ao criar filho!");
+        if (pid == 0) {
+            printf("Processo %d, filho de %d\n", getpid(), getppid());
+            fflush(stdout);
+
+            cria_neto();
+            while(wait(NULL) >= 0);
+
+            printf("Processo %d finalizado\n", getpid());
+            fflush(stdout);
+
+            // para encerrar o processo filho
+            exit(0);
+            break;
+        } else if(pid < 0) {
+            printf("Erro ao criar filho!");
+        }
     }
-
 }
 
 int main(int argc, char** argv) {
-    for (int i = 0; i < 2; i++) {
-        cria_filho();
-    }
-    
+    cria_filho();
+
+    while(wait(NULL) >= 0);
     printf("Processo principal %d finalizado\n", getpid());
     fflush(stdout);   
     return 0;
