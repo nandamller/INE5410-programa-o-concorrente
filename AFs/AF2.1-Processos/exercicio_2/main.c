@@ -35,9 +35,14 @@ void cria_neto() {
         if (pid == 0) {
             printf("Processo %d, filho de %d\n", getpid(), getppid());
             fflush(stdout);
+
+            // espera os 5 segundos
             sleep(5);
+            
             printf("Processo %d finalizado\n", getpid());
             fflush(stdout);
+
+            // para encerrar o processo neto
             exit(0);
             break;
         } else if(pid < 0) {
