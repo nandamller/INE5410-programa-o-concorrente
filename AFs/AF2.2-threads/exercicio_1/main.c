@@ -30,7 +30,8 @@ void* thread(void* arg) {
 
     for (int i = 0; i < *n_loops; i++)
         contador_global++;
-
+    pthread_exit(NULL);
+    
     return 0;
 }
 

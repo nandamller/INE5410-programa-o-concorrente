@@ -25,9 +25,18 @@ typedef struct info_thread
     double* a;
     double* b;
     double* c;
-    unsigned int start, n_loops, remainder_loops;
+    unsigned int inicio, passo, tam_vetores;
 } info_thread;
 
+void* soma_vetor(void* arg) {
+    info_thread *infos = (info_thread*)arg;
+
+    for (int i = infos->inicio; i < infos->tam_vetores; i++)
+        infos->c[i] = infos->a[i] + infos->b[i];
+    pthread_exit(NULL);
+
+    return 0;
+}
 
 int main(int argc, char* argv[]) {
     // Gera um resultado diferente a cada execução do programa
@@ -79,20 +88,24 @@ int main(int argc, char* argv[]) {
         n_threads = a_size;
 
     pthread_t threads[n_threads];
+    info_thread info_thread[n_threads];
+
+    // atribuindo os valores da struct
+    for (int i = 0; i < n_threads; i++) {
+        info_thread[i].a = a;
+        info_thread[i].b = b;
+        info_thread[i].c = c;
+        info_thread[i].inicio = (unsigned int)i;
+        info_thread[i].passo = (unsigned int)n_threads;
+        info_thread[i].tam_vetores = (unsigned int)a_size;
+    }
 
     /* Cria n_threads threads. */
     for (int i = 0; i < n_threads; ++i)
-        pthread_create(&threads[i], NULL, soma_vetor, info_thread);
+        pthread_create(&threads[i], NULL, soma_vetor, (void*)&info_thread[i]);
     
     for (int i = 0; i < n_threads; ++i)
         pthread_join(threads[i], NULL);
-
-    // Calcula com uma thread só. Programador original só deixou a leitura 
-    // do argumento e fugiu pro caribe. É essa computação que você precisa 
-    // paralelizar
-    for (int i = 0; i < a_size; ++i) {
-        c[i] = a[i] + b[i];
-    }
 
     //    +---------------------------------+
     // ** | IMPORTANTE: avalia o resultado! | **
