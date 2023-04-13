@@ -20,6 +20,23 @@ double* load_vector(const char* filename, int* out_size);
 // que ambos a e b sejam vetores de tamanho size.
 void avaliar(double* a, double* b, int size, double prod_escalar);
 
+typedef struct infos_thread
+{
+    double* a;
+    double* b;
+    double resultado;
+    unsigned int inicio, fim;
+} infos_thread;
+
+void* mult_escalar(void* arg) {
+    infos_thread *infos = (infos_thread*)arg;
+
+    for (int i = infos->inicio; i <= infos->fim; i++)
+        infos->resultado += infos->a[i] * infos->b[i];
+    pthread_exit(NULL);
+}
+
+
 int main(int argc, char* argv[]) {
     srand(time(NULL));
 
@@ -59,11 +76,51 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
+    // caso o número de threads é maior que o tamanho das listas as threads devem ser
+    // do tamanho das listas
+    if (n_threads > a_size)
+        n_threads = a_size;
+
     //Calcula produto escalar. Paralelize essa parte
     double result = 0;
-    for (int i = 0; i < a_size; ++i) 
-        result += a[i] * b[i];
+
+    pthread_t threads[n_threads];
+    infos_thread infos_thread[n_threads];
+
+    unsigned int op_thread = a_size/n_threads;
+    unsigned int resto = a_size%n_threads;
+
+    for (int i = 0; i < n_threads; i++) {
+        infos_thread[i].a = a;
+        infos_thread[i].b = b;
+        infos_thread[i].resultado = 0;
+
+        // para dividir igualmente as thread
+        if (resto != 0) {
+            if (i < resto) {
+                infos_thread[i].inicio = i * (op_thread + 1);
+                infos_thread[i].fim = infos_thread[i].inicio + op_thread;
+            } else {
+                infos_thread[i].inicio = (i * op_thread) + resto;
+                infos_thread[i].fim = infos_thread[i].inicio + op_thread - 1;    
+            }
+        } else {
+            infos_thread[i].inicio = i * op_thread;
+            infos_thread[i].fim = infos_thread[i].inicio + op_thread - 1;
+        }
+    }
+
+    /* Cria n_threads threads. */
+    for (int i = 0; i < n_threads; ++i)
+        pthread_create(&threads[i], NULL, mult_escalar, (void*)&infos_thread[i]);
     
+    for (int i = 0; i < n_threads; ++i) {
+        pthread_join(threads[i], NULL);
+        
+        // somando todos os resultados parciais que cada thread obteve
+        result += infos_thread[i].resultado; 
+    }
+
     //    +---------------------------------+
     // ** | IMPORTANTE: avalia o resultado! | **
     //    +---------------------------------+
