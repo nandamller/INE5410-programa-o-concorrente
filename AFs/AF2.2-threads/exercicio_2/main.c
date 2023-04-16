@@ -25,13 +25,13 @@ typedef struct info_thread
     double* a;
     double* b;
     double* c;
-    unsigned int inicio, passo, tam_vetores;
+    unsigned int inicio, fim;
 } info_thread;
 
 void* soma_vetor(void* arg) {
     info_thread *infos = (info_thread*)arg;
 
-    for (int i = infos->inicio; i < infos->tam_vetores; i++)
+    for (int i = infos->inicio; i <= infos->fim; i++)
         infos->c[i] = infos->a[i] + infos->b[i];
     pthread_exit(NULL);
 
@@ -90,14 +90,28 @@ int main(int argc, char* argv[]) {
     pthread_t threads[n_threads];
     info_thread info_thread[n_threads];
 
+    unsigned int op_thread = a_size/n_threads;
+    unsigned int resto = a_size%n_threads;
+
     // atribuindo os valores da struct
     for (int i = 0; i < n_threads; i++) {
         info_thread[i].a = a;
         info_thread[i].b = b;
         info_thread[i].c = c;
-        info_thread[i].inicio = (unsigned int)i;
-        info_thread[i].passo = (unsigned int)n_threads;
-        info_thread[i].tam_vetores = (unsigned int)a_size;
+        
+        // para dividir igualmente as thread
+        if (resto != 0) {
+            if (i < resto) {
+                info_thread[i].inicio = i * (op_thread + 1);
+                info_thread[i].fim = info_thread[i].inicio + op_thread;
+            } else {
+                info_thread[i].inicio = (i * op_thread) + resto;
+                info_thread[i].fim = info_thread[i].inicio + op_thread - 1;    
+            }
+        } else {
+            info_thread[i].inicio = i * op_thread;
+            info_thread[i].fim = info_thread[i].inicio + op_thread - 1;
+        }
     }
 
     /* Cria n_threads threads. */
