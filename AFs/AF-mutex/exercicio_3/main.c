@@ -3,33 +3,29 @@
 #include <stdlib.h>
 #include <assert.h>
 
-int gValue = 0;
-pthread_mutex_t gMtx;
 
 // Função imprime resultados na correção do exercício -- definida em helper.c
 void imprimir_resultados(int n, int** results);
 
-// Função escrita por um engenheiro
-void compute(int arg) {
-    if (arg < 2) {
-        pthread_mutex_lock(&gMtx);
-        gValue += arg;
-        pthread_mutex_unlock(&gMtx);
-    } else {
-        compute(arg - 1);
-        compute(arg - 2);
+// Função escrita por um engenheiro cujo resultado é a sequência de Fibonacci
+int compute(int arg) {
+    // A variável global não é mais utilizada aqui, assim não precisamos de mutexes
+    int t1 = 0, t2 = 1, proximo;
+    
+    for (int i=1; i<=arg; i++) {
+        proximo = t1 + t2;
+        t1 = t2;
+        t2 = proximo;
     }
+
+    return t1;
 }
 
 // Função wrapper que pode ser usada com pthread_create() para criar uma 
 // thread que retorna o resultado de compute(arg
 void* compute_thread(void* arg) {
-    int* ret = malloc(sizeof(int));
-    pthread_mutex_lock(&gMtx);
-    gValue = 0;
-    compute(*((int*)arg));
-    *ret = gValue;
-    pthread_mutex_unlock(&gMtx);
+    int* ret = malloc(sizeof(int));    
+    *ret = compute(*((int*)arg));
     return ret;
 }
 
@@ -47,9 +43,6 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    //Inicializa o mutex
-    pthread_mutex_init(&gMtx, NULL);
-
     int args[n_threads];
     int* results[n_threads];
     pthread_t threads[n_threads];
@@ -61,9 +54,6 @@ int main(int argc, char** argv) {
     // Faz join em todas as threads e salva resultados
     for (int i = 0; i < n_threads; ++i)
         pthread_join(threads[i], (void**)&results[i]);
-
-    // Não usaremos mais o mutex
-    pthread_mutex_destroy(&gMtx);
 
     // Imprime resultados na tela
     // Importante: deve ser chamada para que a correção funcione
