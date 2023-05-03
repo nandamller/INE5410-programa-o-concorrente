@@ -52,7 +52,7 @@ int main(int argc, char* argv[]) {
         pthread_create(&threads[i], NULL, thread, (void *)&n_loops);
     
     for(int i = 0; i < n_threads; i++)
-        pthread_join(threads[i], NULL);
+        pthread_join(&threads[i], NULL);
     
     printf("Contador: %d\n", contador_global);
     printf("Esperado: %d\n", n_threads*n_loops);
