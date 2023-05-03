@@ -24,8 +24,12 @@ char cabeceiras[2][11] = { { "CONTINENTE" }, { "ILHA" } };
 int total_veiculos;
 int veiculos_turno;
 
-// ToDo: Adicione aque quaisquer outras variávels globais necessárias.
-/* ---------------------------------------- */
+/* criação das variáveis semáforos
+	| cont_ilha: semáforo de entrada no sentido continente -> ilha.
+	| ilha_cont: semáforo de entrada no sentido ilha -> continente.
+	| sentido: semáforo para controlar o sentido no qual os carros podem passar.
+*/ 
+sem_t cont_ilha, ilha_cont, saida;
 
 
 /* Inicializa a ponte. */
