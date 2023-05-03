@@ -6,23 +6,37 @@
 
 FILE* out;
 
+// criação do semáforo s
+sem_t a, b;
+
 void *thread_a(void *args) {
     for (int i = 0; i < *(int*)args; ++i) {
 	//      +---> arquivo (FILE*) destino
 	//      |    +---> string a ser impressa
 	//      v    v
+        
+        // solicita acesso a região crítica
+        sem_wait(&a);
+
         fprintf(out, "A");
-        // Importante para que vocês vejam o progresso do programa
-        // mesmo que o programa trave em um sem_wait().
         fflush(stdout);
+
+        // libera acesso a região crítica
+        sem_post(&b);
     }
     return NULL;
 }
 
 void *thread_b(void *args) {
     for (int i = 0; i < *(int*)args; ++i) {
+        // solicita acesso a região crítica
+        sem_wait(&b);
+
         fprintf(out, "B");
         fflush(stdout);
+
+        // libera acesso a região crítica
+        sem_post(&a);
     }
     return NULL;
 }
@@ -38,6 +52,10 @@ int main(int argc, char** argv) {
 
     pthread_t ta, tb;
 
+    // iniciando os semáforos s
+    sem_init(&a, 0, 1);
+    sem_init(&b, 0, 1);
+
     // Cria threads
     pthread_create(&ta, NULL, thread_a, &iters);
     pthread_create(&tb, NULL, thread_b, &iters);
@@ -45,6 +63,10 @@ int main(int argc, char** argv) {
     // Espera pelas threads
     pthread_join(ta, NULL);
     pthread_join(tb, NULL);
+
+    // destruindo o semáforo s
+    sem_destroy(&a);
+    sem_destroy(&b);
 
     //Imprime quebra de linha e fecha arquivo
     fprintf(out, "\n");
