@@ -30,13 +30,15 @@ int veiculos_turno;
 	| sentido: semáforo para controlar o sentido no qual os carros podem passar.
 */ 
 sem_t cont_ilha, ilha_cont, saida;
-
+int contagem = 0;
 
 /* Inicializa a ponte. */
 void ponte_inicializar() {
 	
 	// ToDo: IMPLEMENTAR!
-
+	sem_init(&cont_ilha, 0, veiculos_turno);
+	sem_init(&ilha_cont, 0, 0);
+	sem_init(&saida, 0, 1);
 	/* Imprime direção inicial da travessia. NÃO REMOVER! */
 	printf("\n[PONTE] *** Novo sentido da travessia: CONTINENTE -> ILHA. ***\n\n");
 	fflush(stdout);
@@ -44,22 +46,40 @@ void ponte_inicializar() {
 
 /* Função executada pelo veículo para ENTRAR em uma cabeceira da ponte. */
 void ponte_entrar(veiculo_t *v) {
+	if (v->cabeceira == 0) {
+		sem_wait(&cont_ilha);
+	} else {
+		sem_wait(&ilha_cont);
+	}
 	
 	// ToDo: IMPLEMENTAR!
 }
 
 /* Função executada pelo veículo para SAIR de uma cabeceira da ponte. */
 void ponte_sair(veiculo_t *v) {
-
+	sem_wait(&saida);
+	contagem++;
+	if (contagem == veiculos_turno) {
+		contagem = 0;
+		printf("\n[PONTE] *** Novo sentido da travessia: %s -> %s. ***\n\n", cabeceiras[v->cabeceira], cabeceiras[!v->cabeceira]);
+		fflush(stdout);}
+		if (v->cabeceira == ILHA) {
+				for (int i = 0; i < veiculos_turno; i++)
+						sem_post(&ilha_cont);
+		}
+		else {
+				for (int i = 0; i < veiculos_turno; i++)
+						sem_post(&cont_ilha);
+		}
 	// ToDo: IMPLEMENTAR!
 	/* Você deverá imprimir a nova direção da travessia quando for necessário! */	
-	printf("\n[PONTE] *** Novo sentido da travessia: %s -> %s. ***\n\n", cabeceiras[v->cabeceira], cabeceiras[!v->cabeceira]);
-	fflush(stdout);
 }
 
 /* FINALIZA a ponte. */
 void ponte_finalizar() {
-
+	sem_destroy(&ilha_cont);
+	sem_destroy(&cont_ilha);
+	sem_destroy(&saida);
 	// ToDo: IMPLEMENTAR!
 	
 	/* Imprime fim da execução! */
