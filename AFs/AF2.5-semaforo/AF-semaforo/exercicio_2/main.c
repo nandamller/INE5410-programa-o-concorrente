@@ -71,6 +71,7 @@ void ponte_sair(veiculo_t *v) {
 				for (int i = 0; i < veiculos_turno; i++)
 						sem_post(&cont_ilha);
 		}
+		sem_post(&saida);
 	// ToDo: IMPLEMENTAR!
 	/* Você deverá imprimir a nova direção da travessia quando for necessário! */	
 }
